@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Chat with Sina{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<input type="hidden" id="current-session-id" value="{{ current_session.session_id if current_session else '' }}">
+<script>
+    window.initialMessages = JSON.parse("{{ messages|tojson|safe if messages else '[]' }}");
+</script>
+
+<div class="container mx-auto px-4 py-12">
+    <div class="flex flex-col items-center">
+        <div class="w-full max-w-lg bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="chat-header">
+                <h1 class="text-2xl font-semibold text-center text-green-800 py-4">
+                    🌿 Natural Healing Assistant AI Sina 🌿
+                </h1>
+            </div>
+            <div class="p-6">
+                <div id="chat-container" class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Initial greeting message -->
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                Hello! I'm Sina, your natural healing assistant. How can I help you today? 🌿
+                            </div>
+                        </div>
+                    </div>
+                    <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                        <div class="leaf"></div>
+                        <div class="leaf"></div>
+                        <div class="leaf"></div>
+                    </div>
+                    <div class="input-container">
+                        <input type="text" 
+                               id="message-input" 
+                               placeholder="Ask AI Sina..." 
+                               autocomplete="off">
+                        <button id="send-button">
+                            <i class="fas fa-leaf"></i>
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat History Section -->
+    <section class="mt-8 w-full max-w-lg">
+        <h2 class="text-2xl font-semibold mb-4">Previous Sessions</h2>
+        {% if sessions %}
+            <ul class="space-y-4">
+                {% for chat_session in sessions %}
+                    <li class="session-item bg-white rounded-lg shadow p-4 {% if current_session and current_session.session_id == chat_session.session_id %}border-l-4 border-green-500{% endif %}"
+                        data-session-id="{{ chat_session.session_id }}">
+                        <div class="flex justify-between items-center">
+                            <div class="flex-grow">
+                                <h3 class="font-semibold text-gray-800">{{ chat_session.title }}</h3>
+                                <p class="text-sm text-gray-600">{{ chat_session.created_at.strftime('%Y-%m-%d %H:%M:%S') if chat_session.created_at else '' }}</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="reopen-btn px-3 py-1 text-green-600 border border-green-600 rounded hover:bg-green-50"
+                                        data-session-id="{{ chat_session.session_id }}">
+                                    Reopen
+                                </button>
+                                <button class="delete-btn px-3 py-1 text-red-600 border border-red-600 rounded hover:bg-red-50"
+                                        data-session-id="{{ chat_session.session_id }}">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-600">No previous sessions.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %} 

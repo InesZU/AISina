@@ -1,0 +1,928 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.auth-container {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--nature-light-gradient);
+}
+
+.auth-box {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: var(--nature-gradient);
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: var(--light-green);
+}
+
+.auth-link {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.alert {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.page-transition {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Nature Theme Styles */
+.nature-bg {
+    background: var(--nature-light-gradient);
+    min-height: 100vh;
+}
+
+.nature-theme {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.nature-input {
+    background: #f8faf5;
+    border: 2px solid #c5e1a5;
+    border-radius: 8px;
+    padding: 12px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.nature-input:focus {
+    border-color: var(--light-green);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
+
+.nature-btn {
+    background: var(--nature-gradient);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+}
+
+.nature-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 195, 74, 0.3);
+    background: var(--light-green);
+}
+
+.nature-link {
+    color: var(--primary-green);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.nature-link:hover {
+    color: var(--light-green);
+    text-decoration: underline;
+}
+
+.nature-alert {
+    background: var(--light-yellow);
+    border-left: 4px solid var(--accent-yellow);
+    color: var(--dark-green);
+    padding: 12px;
+    margin: 12px 0;
+    border-radius: 4px;
+}
+
+.herb-icon {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Page Transitions */
+.page-transition {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease-out;
+}
+
+.page-transition.page-exit {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Animations */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .auth-box {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .nature-theme h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #36502c 0%, #aedb34 100%);
+    color: white;
+    padding: 100px 0;
+    margin-bottom: 50px;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+}
+
+.hero .lead {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+}
+
+/* About Section */
+.about-section {
+    padding: 80px 0;
+    background: #f8f9fa;
+}
+
+/* Medicine Systems */
+.medicine-systems {
+    padding: 80px 0;
+}
+
+.medicine-card {
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    transition: transform 0.3s ease;
+}
+
+.medicine-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Resources Section */
+.resources {
+    background: #f8f9fa;
+    padding: 80px 0;
+}
+
+/* Contact Section */
+.contact-section {
+    padding: 80px 0;
+}
+
+/* Chat Interface */
+#chat-app {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero {
+        padding: 50px 0;
+    }
+    
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+}
+
+/* Transition Animations */
+.transition {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease-out;
+}
+
+.transition.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.transition.hide {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Page Transitions */
+.page-enter {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.page-enter-active {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 300ms, transform 300ms;
+}
+
+.page-exit {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.page-exit-active {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 300ms, transform 300ms;
+}
+
+/* Chat Page Styles */
+.chat-page-container {
+    display: flex;
+    height: 100vh;
+    background: #f8faf5;
+}
+
+.sessions-sidebar {
+    width: 300px;
+    background: white;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.profile-image {
+    position: relative;
+    margin-right: 15px;
+}
+
+.profile-image img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.online-status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--light-green);
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.sessions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.sessions-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.session-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 5px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.session-item:hover {
+    background: var(--light-yellow);
+}
+
+.session-item.active {
+    background: var(--light-green);
+    color: white;
+}
+
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 20px;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 40px;
+}
+
+.suggestion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.suggestion-chip {
+    background: var(--light-yellow);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--dark-green);
+}
+
+.suggestion-chip:hover {
+    background: var(--accent-yellow);
+}
+
+.chat-input-form {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.send-button {
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.send-button:hover {
+    background: var(--light-green);
+    transform: scale(1.05);
+}
+
+/* Message Styles */
+.message {
+    max-width: 70%;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 15px;
+    position: relative;
+}
+
+.message.user {
+    margin-left: auto;
+    background: var(--light-green);
+    color: white;
+}
+
+.message.bot {
+    margin-right: auto;
+    background: var(--light-yellow);
+    color: var(--dark-green);
+    border: 1px solid #e0e0e0;
+}
+
+.message-timestamp {
+    font-size: 0.8em;
+    color: #757575;
+    margin-top: 5px;
+}
+
+/* Animations */
+@keyframes messageIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message {
+    animation: messageIn 0.3s ease-out;
+}
+
+/* Base colors */
+:root {
+    --primary-green: #2c5a3f;
+    --light-green: #4caf50;
+    --dark-green: #1b5e20;
+    --accent-yellow: #ffd54f;
+    --light-yellow: #fff8e1;
+    --nature-gradient: linear-gradient(135deg, #4caf50 0%, #2c5a3f 100%);
+    --nature-light-gradient: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+}
+
+/* Update existing color values */
+.message.user {
+    background: var(--light-green);
+    color: white;
+    margin-left: auto;
+}
+
+.message.bot {
+    background: var(--light-yellow);
+    color: var(--dark-green);
+}
+
+.nav-links li.active {
+    background: var(--primary-green);
+}
+
+.nav-links li:hover {
+    background: var(--light-green);
+}
+
+.chat-input button {
+    background: var(--primary-green);
+    color: white;
+}
+
+.chat-input button:hover {
+    background: var(--light-green);
+}
+
+.sidebar {
+    background: var(--nature-gradient);
+}
+
+.nature-btn {
+    background: var(--nature-gradient);
+}
+
+.nature-btn:hover {
+    background: var(--light-green);
+}
+
+.nature-link {
+    color: var(--primary-green);
+}
+
+.nature-link:hover {
+    color: var(--light-green);
+}
+
+.auth-container {
+    background: var(--nature-light-gradient);
+}
+
+.send-button {
+    background: var(--primary-green);
+}
+
+.send-button:hover {
+    background: var(--light-green);
+}
+
+.session-item:hover {
+    background: var(--light-yellow);
+}
+
+.session-item.active {
+    background: var(--light-green);
+    color: white;
+}
+
+.suggestion-chip {
+    background: var(--light-yellow);
+    color: var(--dark-green);
+}
+
+.suggestion-chip:hover {
+    background: var(--accent-yellow);
+}
+
+/* Update any remaining blue values */
+.online-status {
+    background: var(--light-green);
+}
+
+.nature-input:focus {
+    border-color: var(--light-green);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+/* Alert and notification styles */
+.nature-alert {
+    background: var(--light-yellow);
+    border-left: 4px solid var(--accent-yellow);
+    color: var(--dark-green);
+}
+
+/* Button and interactive element styles */
+.btn-primary {
+    background: var(--nature-gradient);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: var(--light-green);
+}
+
+/* Form element focus states */
+input:focus, 
+textarea:focus, 
+select:focus {
+    border-color: var(--light-green);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Highlight and selection colors */
+::selection {
+    background: var(--light-green);
+    color: white;
+}
+
+/* Link colors */
+a {
+    color: var(--primary-green);
+}
+
+a:hover {
+    color: var(--light-green);
+}
+
+/* Additional nature-themed gradients */
+.gradient-bg {
+    background: var(--nature-gradient);
+}
+
+.light-gradient-bg {
+    background: var(--nature-light-gradient);
+}
+
+/* Chat message animations */
+@keyframes messageGlow {
+    0% {
+        box-shadow: 0 0 5px var(--light-green);
+    }
+    50% {
+        box-shadow: 0 0 15px var(--light-green);
+    }
+    100% {
+        box-shadow: 0 0 5px var(--light-green);
+    }
+}
+
+/* Hover effects */
+.hover-effect:hover {
+    background: var(--light-yellow);
+    border-color: var(--accent-yellow);
+}
+
+/* Active states */
+.active-state {
+    background: var(--primary-green);
+    color: white;
+}
+
+/* Focus states */
+.focus-state:focus {
+    border-color: var(--light-green);
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+/* Landing Page Styles */
+.hero {
+    padding: 100px 0;
+    background: var(--nature-light-gradient);
+}
+
+.hero-image {
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.about-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.about-image {
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.medicine-systems {
+    padding: 80px 0;
+    background: var(--nature-light-gradient);
+}
+
+.medicine-card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.medicine-card:hover {
+    transform: translateY(-10px);
+}
+
+.features-section {
+    padding: 80px 0;
+    background: white;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 30px;
+    border-radius: 20px;
+    background: var(--nature-light-gradient);
+    height: 100%;
+}
+
+.feature-icon {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.cta-section {
+    padding: 100px 0;
+    background: var(--nature-gradient);
+    color: white;
+}
+
+.cta-buttons {
+    margin-top: 30px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 2px solid white;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero {
+        padding: 50px 0;
+    }
+    
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .medicine-card {
+        margin-bottom: 30px;
+    }
+    
+    .feature-card {
+        margin-bottom: 30px;
+    }
+}
+
+.logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--primary-green);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    font-size: 2.5rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Logo Styles */
+.logo-container {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    font-size: 2em;
+    animation: float 3s ease-in-out infinite;
+}
+
+.logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8em;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--light-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Navigation Styles */
+.main-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(to bottom, rgba(44, 90, 63, 0.95) 0%, rgba(44, 90, 63, 0.85) 100%);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.nav-links a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-links a.active {
+    background: var(--light-green);
+}
+
+/* Hero Section Update */
+.hero {
+    margin-top: 80px; /* Account for fixed nav */
+    background: linear-gradient(135deg, 
+        var(--primary-green) 0%, 
+        var(--light-green) 60%, 
+        rgba(255, 255, 255, 0.9) 100%);
+    color: white;
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom,
+        rgba(44, 90, 63, 0.9) 0%,
+        rgba(44, 90, 63, 0.7) 50%,
+        rgba(44, 90, 63, 0.5) 100%);
+    z-index: 1;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Page Transition Updates */
+.page-transition {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.5s ease-out;
+}
+
+.page-transition.page-exit {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Logo Updates for Dark Background */
+.logo-text {
+    color: white;
+    background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Content Padding for Fixed Nav */
+.auth-container,
+.chat-page-container {
+    padding-top: 80px;
+}
