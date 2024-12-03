@@ -21,8 +21,9 @@ CREATE TABLE users (
 CREATE TABLE chat_sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL,
+    title TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
@@ -31,7 +32,7 @@ CREATE TABLE chat_messages (
     session_id INTEGER NOT NULL,
     content TEXT NOT NULL,
     is_bot BOOLEAN NOT NULL,
-    created_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES chat_sessions (id)
 );
 
@@ -55,9 +56,3 @@ CREATE TABLE contact_messages (
 
 CREATE INDEX idx_user_remedies_user_id ON user_remedies(user_id);
 CREATE INDEX idx_contact_messages_status ON contact_messages(status);
-
-CREATE TABLE IF NOT EXISTS chat_sessions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    assistant_id TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);

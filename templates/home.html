@@ -3,122 +3,200 @@
 {% block title %}Home - GreenPill{% endblock %}
 
 {% block content %}
-<div class="landing-page">
-    <!-- Hero Section -->
-    <header class="hero">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="AI Health Assistant">
-                </div>
-                <div class="col-md-6">
-                    <h1>Welcome to GreenPill</h1>
-                    <p class="lead">Your AI-powered guide to natural healing and holistic wellness</p>
-                    <a href="{{ url_for('chat') }}" class="btn-primary nature-btn">Start Chatting with Sina</a>
-                </div>
-                
+<!-- Keep the modern hero section -->
+<header class="hero-section">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="animate-fade-in">Welcome to GreenPill</h1>
+            <p class="hero-subtitle animate-fade-in-delay">Your AI-powered guide to natural healing and holistic wellness</p>
+            <div class="hero-buttons animate-fade-in-delay-2">
+                <a href="{{ url_for('chat') }}" class="primary-btn">
+                    <span class="leaf-icon">🌿</span>
+                    Start Your Healing Journey
+                </a>
             </div>
         </div>
-    </header>
+    </div>
+    <div class="hero-leaves">
+        <div class="leaf leaf-1">🌿</div>
+        <div class="leaf leaf-2">🍃</div>
+        <div class="leaf leaf-3">🌱</div>
+    </div>
+</header>
 
-    <!-- About Section -->
-    <section class="about-section">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <img src="{{ url_for('static', filename='images/stethoscope.jpg') }}" alt="About GreenPill" class="img-fluid about-image">
-                </div>
-                <div class="col-md-6">
-                    <h2>About Our App</h2>
-                    <p>Welcome to GreenPill, your personal assistant Sina, designed to guide you in exploring natural remedies customized to your age, gender, medical conditions, and allergies.</p>
-                    <p>Our app provides a gateway to discovering herbal treatments for common health concerns, drawing from the rich wisdom of Chinese, Ayurvedic, and Unani medicine traditions.</p>
-                    <p>Powered by cutting-edge AI technology, GreenPill delivers comprehensive insights and recommendations on natural remedies.</p>
-                    <a href="{{ url_for('chat') }}" class="nature-btn">Learn More</a>
-                </div>
+<!-- About Section with Image -->
+<div class="about-section">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-content">
+                <h2>About Our App</h2>
+                <p>Welcome to GreenPill, your personal assistant Sina, designed to guide you in exploring natural remedies customized to your age, gender, medical conditions, and allergies.</p>
+                <p>Our app provides a gateway to discovering herbal treatments for common health concerns, drawing from the rich wisdom of Chinese, Ayurvedic, and Unani medicine traditions.</p>
+                <p>Whether you're seeking relief from headaches, digestive issues, or sleep disturbances, GreenPill offers personalized suggestions that cater specifically to your unique needs.</p>
+            </div>
+            <div class="about-image">
+                <img src="static/images/stethoscope.jpg" alt="Natural Healing"/>
             </div>
         </div>
-    </section>
-
-    <!-- Medicine Systems Section -->
-    <section class="medicine-systems">
-        <div class="container">
-            <h2 class="text-center mb-5">Our Knowledge Base</h2>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="medicine-card">
-                        <div class="herb-icon">🌿</div>
-                        <h3>Ayurveda</h3>
-                        <p>Ancient Indian healing system using herbs like ashwagandha, turmeric, and tulsi. Based on balancing doshas for optimal health.</p>
-                        <a href="https://en.wikipedia.org/wiki/Ayurveda" target="_blank" class="nature-link">Learn More</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="medicine-card">
-                        <div class="herb-icon">🍃</div>
-                        <h3>Chinese Medicine</h3>
-                        <p>Traditional Chinese Medicine using herbs like ginseng and astragalus. Focuses on Qi balance and natural healing.</p>
-                        <a href="https://en.wikipedia.org/wiki/Traditional_Chinese_medicine" target="_blank" class="nature-link">Learn More</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="medicine-card">
-                        <div class="herb-icon">🌱</div>
-                        <h3>Unani</h3>
-                        <p>Greco-Arabic medicine system using natural ingredients like black seed and saffron. Based on the four humors theory.</p>
-                        <a href="https://en.wikipedia.org/wiki/Unani_medicine" target="_blank" class="nature-link">Learn More</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features-section">
-        <div class="container">
-            <h2 class="text-center mb-5">Why Choose GreenPill?</h2>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="feature-card">
-                        <div class="feature-icon">🤖</div>
-                        <h4>AI-Powered</h4>
-                        <p>Advanced AI technology for personalized natural healing recommendations</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="feature-card">
-                        <div class="feature-icon">🎯</div>
-                        <h4>Personalized</h4>
-                        <p>Customized advice based on your health profile and preferences</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="feature-card">
-                        <div class="feature-icon">📚</div>
-                        <h4>Knowledge Base</h4>
-                        <p>Access to traditional medicine wisdom from multiple cultures</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="feature-card">
-                        <div class="feature-icon">🔒</div>
-                        <h4>Secure</h4>
-                        <p>Your health information is kept private and secure</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Call to Action -->
-    <section class="cta-section">
-        <div class="container text-center">
-            <h2>Ready to Start Your Natural Healing Journey?</h2>
-            <p>Join thousands of users discovering the power of natural remedies</p>
-            <div class="cta-buttons">
-                <a href="{{ url_for('chat') }}" class="btn-primary nature-btn">Start Chat</a>
-                <a href="{{ url_for('register') }}" class="btn-secondary nature-btn">Sign Up</a>
-            </div>
-        </div>
-    </section>
+    </div>
 </div>
-{% endblock %} 
+
+<!-- Medicine Systems with Images -->
+<div class="medicine-systems">
+    <div class="container">
+        <h2 class="section-title">Our Knowledge Base</h2>
+        <div class="medicine-grid">
+            <div class="medicine-card">
+                <div class="card-image">
+                    <img src="static/images/service1.jpg" alt="Ayurveda"/>
+                </div>
+                <div class="card-content">
+                    <h3>Ayurveda</h3>
+                    <p>Ancient Indian healing system using powerful herbs like ashwagandha, turmeric, and tulsi. Based on balancing doshas for optimal health.</p>
+                    <ul class="herb-list">
+                        <li>Ashwagandha</li>
+                        <li>Turmeric</li>
+                        <li>Holy Basil</li>
+                    </ul>
+                    <a href="https://en.wikipedia.org/wiki/Ayurveda" target="_blank" class="learn-more">Learn More →</a>
+                </div>
+            </div>
+            <div class="medicine-card">
+                <div class="card-image">
+                    <img src="static/images/service2.jpg" alt="Chinese Medicine"/>
+                </div>
+                <div class="card-content">
+                    <h3>Chinese Medicine</h3>
+                    <p>Traditional healing using herbs like ginseng and astragalus. Focuses on Qi balance and natural healing through time-tested remedies.</p>
+                    <ul class="herb-list">
+                        <li>Ginseng</li>
+                        <li>Astragalus</li>
+                        <li>Licorice Root</li>
+                    </ul>
+                    <a href="https://en.wikipedia.org/wiki/Traditional_Chinese_medicine" target="_blank" class="learn-more">Learn More →</a>
+                </div>
+            </div>
+            <div class="medicine-card">
+                <div class="card-image">
+                    <img src="static/images/Unani.jpg" alt="Unani Medicine"/>
+                </div>
+                <div class="card-content">
+                    <h3>Unani Medicine</h3>
+                    <p>Greco-Arabic healing system using natural ingredients like black seed and saffron. Based on the balance of four humors.</p>
+                    <ul class="herb-list">
+                        <li>Black Seed</li>
+                        <li>Saffron</li>
+                        <li>Fenugreek</li>
+                    </ul>
+                    <a href="https://en.wikipedia.org/wiki/Unani_medicine" target="_blank" class="learn-more">Learn More →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resources Section -->
+<div class="resources-section">
+    <div class="container">
+        <h2 class="section-title">Free Resources</h2>
+        <div class="resources-container">
+            <div class="resource-box">
+                <h3>Herbal Blogs</h3>
+                <div class="resource-content">
+                    <figure><img src="static/images/plants-flat-lay.jpg" alt="Herbal Blogs"/></figure>
+                    <ul class="resource-list">
+                        <li><a href="https://theherbalacademy.com/blog/" target="_blank">The Herbal Academy Blog</a></li>
+                        <li><a href="https://herbsocietyblog.wordpress.com/" target="_blank">Herb Society Blog</a></li>
+                        <li><a href="https://chestnutherbs.com/blog/" target="_blank">Chestnut Herbs Blog</a></li>
+                        <li><a href="https://www.eatweeds.co.uk/" target="_blank">Eat Weeds Blog</a></li>
+                    </ul>
+                    <a class="read_more" href="https://tinyurl.com/4z886sda">Explore More Blogs</a>
+                </div>
+            </div>
+            <div class="resource-box">
+                <h3>Free eBooks</h3>
+                <div class="resource-content">
+                    <figure><img src="static/images/books.jpg" alt="Free Herbal Books"/></figure>
+                    <ul class="resource-list">
+                        <li><a href="https://repository.poltekkes-kaltim.ac.id/1148/1/Handbook%20of%20Medicinal%20Herbs%20(%20PDFDrive%20).pdf" target="_blank">Handbook of Medicinal Herbs</a></li>
+                        <li><a href="https://info.mountainroseherbs.com/free-herbal-ebook" target="_blank">Mountain Rose Herbs eBook</a></li>
+                        <li><a href="https://www.ncbi.nlm.nih.gov/books/NBK92771/" target="_blank">NCBI Herbal Book</a></li>
+                        <li><a href="https://www.greenpathherbschool.com/free-herb-books" target="_blank">Green Path Herb School Free Books</a></li>
+                    </ul>
+                    <a class="read_more" href="https://tinyurl.com/4p2b3hp8">Discover More Books</a>
+                </div>
+            </div>
+            <div class="resource-box">
+                <h3>Free Courses</h3>
+                <div class="resource-content">
+                    <figure><img src="static/images/cosmetic.jpg" alt="Free Herbal Courses"/></figure>
+                    <ul class="resource-list">
+                        <li><a href="https://herbalista.org/free-school/" target="_blank">Herbalista Free School</a></li>
+                        <li><a href="https://alison.com/tag/herbalism" target="_blank">Alison Herbalism</a></li>
+                        <li><a href="https://www.classcentral.com/course/herbalmedicine-12872" target="_blank">Class Central Herbal Medicine</a></li>
+                        <li><a href="https://discoveringherbalmedicine.org.uk/free-herbal-course-herbalism-online/" target="_blank">Discovering Herbal Medicine</a></li>
+                    </ul>
+                    <a class="read_more" href="https://tinyurl.com/mr2h8zjf">Find More Courses</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact and Share Section -->
+<div class="contact-share-section">
+    <div class="container">
+        <div class="form-container">
+            <!-- Share Remedy Form -->
+            <div class="form-box share-remedy">
+                <h2>Share Your Remedy</h2>
+                <p class="form-description">Have an effective natural remedy to share? Submit it here and help others discover new ways to improve their well-being.</p>
+                <form id="add_remedy_form" action="/submit_remedy" method="POST">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="remedy_details" placeholder="Describe your remedy (e.g., ingredients, instructions, and benefits)" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-button">Share Remedy</button>
+                </form>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="form-box contact-form">
+                <h2>Contact Us</h2>
+                <p class="form-description">Have questions or feedback? We're here to help! Reach out to us, and we'll get back to you soon.</p>
+                <form id="request" action="/submit_contact" method="POST">
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="message" placeholder="Your Message" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-button">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Keep the existing animation code
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.medicine-card, .resource-card').forEach(card => {
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

@@ -9,9 +9,11 @@ import os
 from flask import g
 import logging
 from openai import OpenAI
+from sessions import SessionManager
+import logging
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize OpenAI client
@@ -28,12 +30,34 @@ login_manager.login_view = 'login'
 csrf.init_app(app)
 
 # Database configuration
-DATABASE = 'greenpill.db'
+app.config['DATABASE'] = 'greenpill.db'
+api_key = os.getenv("SECRET_KEY")
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+ASSISTANT_ID = os.getenv("ASSISTANT_ID")
+
+# Temporary development settings - ADD THIS AT THE TOP after imports
+DEVELOPMENT = True  # Set this to False when deploying
+
+if DEVELOPMENT:
+    # Create a development user session
+    @app.before_request
+    def dev_login():
+        if not current_user.is_authenticated:
+            # Create a mock user
+            dev_user = User(1, 'developer')
+            login_user(dev_user)
+
+# Modify the login_required decorator - ADD THIS BEFORE your routes
+def dev_login_required(f):
+    if DEVELOPMENT:
+        return f
+    return login_required(f)
 
 def get_db():
     """Connect to the database."""
     if not hasattr(g, 'sqlite_db'):
-        g.sqlite_db = sqlite3.connect(DATABASE)
+        g.sqlite_db = sqlite3.connect(app.config['DATABASE'])
         g.sqlite_db.row_factory = sqlite3.Row
     return g.sqlite_db
 
@@ -56,8 +80,11 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS chat_sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
             assistant_id TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            title TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
     conn.commit()
@@ -91,7 +118,7 @@ def home():
                          current_user=current_user)
 
 @app.route('/submit_remedy', methods=['POST'])
-@login_required
+@dev_login_required
 def submit_remedy():
     if request.method == 'POST':
         name = request.form.get('name')
@@ -141,7 +168,7 @@ def submit_contact():
         return redirect(url_for('home'))
 
 @app.route('/get_sessions')
-@login_required
+@dev_login_required
 def get_sessions():
     db = get_db()
     sessions = db.execute('''
@@ -160,7 +187,7 @@ def get_sessions():
     })
 
 @app.route('/get_session_messages/<int:session_id>')
-@login_required
+@dev_login_required
 def get_session_messages(session_id):
     db = get_db()
     # Verify session belongs to current user
@@ -187,86 +214,62 @@ def get_session_messages(session_id):
         } for row in messages]
     })
 
+# Initialize session manager
+session_manager = SessionManager(app)
+
 @app.route('/chat')
-@login_required
+@dev_login_required
 def chat():
-    return render_template('chat.html')
-
-def create_assistant():
-    try:
-        assistant = client.beta.assistants.create(
-            name="Sina",
-            instructions="You are Sina, a natural healing assistant. You help users with natural remedies and holistic health advice.",
-            model="gpt-4-1106-preview"
-        )
-        logger.info(f"Created new assistant with ID: {assistant.id}")
-        return assistant.id
-    except Exception as e:
-        logger.error(f"Error creating assistant: {str(e)}")
-        raise
-
-def open_new_session():
-    assistant_id = create_assistant()
-    conn = sqlite3.connect('chat.db')
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO chat_sessions (assistant_id) VALUES (?)", (assistant_id,))
-    session_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    return session_id, assistant_id
+    session_id = request.args.get('session_id')
+    if not session_id:
+        # Create new session
+        session_id = session_manager.create_session(current_user.id)
+        return redirect(url_for('chat', session_id=session_id))
+    
+    session = session_manager.get_session(session_id)
+    if not session or session.user_id != current_user.id:
+        return redirect(url_for('chat'))
+    
+    # Get all user sessions for the sidebar
+    user_sessions = session_manager.get_user_sessions(current_user.id)
+    
+    return render_template('chat.html', 
+                         session_id=session_id,
+                         current_session=session,
+                         sessions=user_sessions)
 
 @app.route('/chat_message', methods=['POST'])
+@dev_login_required
 def handle_chat_message():
     data = request.get_json()
     message = data.get('message')
-
-    # Open a new session if needed
-    session_id, assistant_id = open_new_session()
-
+    session_id = data.get('session_id')
+    
+    if not message or not session_id:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    # Add user message
+    if not session_manager.add_message(session_id, message, 'user'):
+        return jsonify({'error': 'Failed to save message'}), 500
+    
     try:
-        # Create a thread
-        thread = client.beta.threads.create()
-        
-        # Add message to thread
-        client.beta.threads.messages.create(
-            thread_id=thread.id,
-            role="user",
-            content=message
+        # Get AI response
+        response = client.chat.completions.create(
+            model="gpt-4-1106-preview",
+            messages=[{"role": "user", "content": message}]
         )
+        ai_response = response.choices[0].message.content
         
-        # Run the assistant
-        run = client.beta.threads.runs.create(
-            thread_id=thread.id,
-            assistant_id=assistant_id
-        )
+        # Add AI message
+        session_manager.add_message(session_id, ai_response, 'assistant')
         
-        # Wait for completion
-        while run.status in ["queued", "in_progress"]:
-            run = client.beta.threads.runs.retrieve(
-                thread_id=thread.id,
-                run_id=run.id
-            )
-        
-        # Get response
-        messages = client.beta.threads.messages.list(thread_id=thread.id)
-        ai_response = messages.data[0].content[0].text.value
-
-        # Save conversation to JSON
-        conversation = {
-            "session_id": session_id,
-            "messages": [
-                {"role": "user", "content": message},
-                {"role": "assistant", "content": ai_response}
-            ]
-        }
-        with open(f'conversation_{session_id}.json', 'w') as f:
-            json.dump(conversation, f)
-
+        return jsonify({
+            'response': ai_response,
+            'session_id': session_id
+        })
     except Exception as e:
-        logger.error(f"Error processing request: {str(e)}")
-        ai_response = "I'm sorry, I couldn't process your request."
-
-    return jsonify({'response': ai_response})
+        logger.error(f"Error in chat_message: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 # Authentication routes
 @app.route('/register', methods=['GET', 'POST'])
@@ -322,7 +325,7 @@ def login():
         ).fetchone()
 
         if user is None:
-            error = 'Incorrect username.'
+            error = 'Please register first.'
         elif not check_password_hash(user['password'], password):
             error = 'Incorrect password.'
 
@@ -337,7 +340,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/logout')
-@login_required
+@dev_login_required
 def logout():
     logout_user()
     flash('You have been logged out.')
@@ -353,6 +356,37 @@ def init_db_command():
 @app.route('/test_csrf', methods=['POST'])
 def test_csrf():
     return "CSRF token is working!"
+
+@app.route('/chat/<int:session_id>')
+@dev_login_required
+def chat_session(session_id):
+    db = get_db()
+    session = db.execute('''
+        SELECT * FROM chat_sessions 
+        WHERE id = ? AND user_id = ?
+    ''', (session_id, current_user.id)).fetchone()
+    
+    if not session:
+        return redirect(url_for('chat'))
+        
+    # Load conversation history from JSON
+    try:
+        with open(f'conversation_{session_id}.json', 'r') as f:
+            conversation = json.load(f)
+    except FileNotFoundError:
+        conversation = {"messages": []}
+    
+    return render_template('chat.html', 
+                         session_id=session_id,
+                         conversation=conversation)
+
+@app.route('/delete_session/<session_id>', methods=['POST'])
+@dev_login_required
+def delete_session(session_id):
+    if session_manager.delete_session(session_id, current_user.id):
+        return jsonify({'success': True})
+    else:
+        return jsonify({'error': 'Failed to delete session'}), 500
 
 if __name__ == '__main__':
     init_db()  # Initialize the database
