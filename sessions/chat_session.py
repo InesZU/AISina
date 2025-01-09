@@ -2,14 +2,14 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 class ChatSession:
-    def __init__(self, session_id: str, user_id: int, title: str = "New Chat"):
+    def __init__(self, session_id: str, user_id: int, title: str, created_at: datetime, updated_at: datetime, messages: List[Dict[str, Any]] = None):
         self.session_id = session_id
         self.db_id = None
         self.user_id = user_id
         self.title = title
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
-        self.messages: List[Dict[str, Any]] = []
+        self.messages = messages or []  # Default to an empty list if no messages are provided
 
     def to_dict(self) -> Dict[str, Any]:
         return {

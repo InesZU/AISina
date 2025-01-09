@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const ChatInterface = () => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(window.initialMessages || []);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef(null);
@@ -25,39 +25,6 @@ const ChatInterface = () => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sessionId = urlParams.get('session_id');
-    if (sessionId) {
-      loadConversation(sessionId);
-    }
-  }, []);
-
-  const loadConversation = async (sessionId) => {
-    try {
-      const response = await fetch(`/api/chat?session_id=${sessionId}`);
-      const data = await response.json();
-
-      if (data.history) {
-        const formattedMessages = data.history.map((entry) => ({
-          content: entry.content,
-          role: entry.role,
-          timestamp: entry.timestamp || new Date().toISOString(),
-        }));
-        setMessages(formattedMessages);
-      }
-    } catch (error) {
-      console.error('Error loading conversation:', error);
-      setMessages([
-        {
-          content: 'Sorry, there was an error loading the previous conversation.',
-          role: 'assistant',
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-    }
-  };
-
   const sendMessage = async (e) => {
     e.preventDefault();
     const now = Date.now();
@@ -76,7 +43,7 @@ const ChatInterface = () => {
       ]);
       setTimeout(() => {
         setMessages((prev) =>
-          prev.filter((msg) => msg.timestamp !== 'system')
+          prev.filter((msg) => msg.role !== 'system')
         );
       }, 3000);
       return;
@@ -96,7 +63,7 @@ const ChatInterface = () => {
     setLastRequestTime(now);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,8 +115,6 @@ const ChatInterface = () => {
                 className={`max-w-[80%] p-3 rounded-lg ${
                   message.role === 'user'
                     ? 'bg-blue-500 text-white ml-4'
-                    : message.role === 'system'
-                    ? 'bg-yellow-100 text-gray-700'
                     : 'bg-gray-100 text-gray-900 mr-4'
                 }`}
               >

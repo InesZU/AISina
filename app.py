@@ -1,16 +1,18 @@
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 import sqlite3
 import json
-from datetime import datetime
 import os
 from flask import g
-import logging
 from openai import OpenAI
 from sessions import SessionManager
 import logging
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -48,11 +50,13 @@ if DEVELOPMENT:
             dev_user = User(1, 'developer')
             login_user(dev_user)
 
+
 # Modify the login_required decorator - ADD THIS BEFORE your routes
 def dev_login_required(f):
     if DEVELOPMENT:
         return f
     return login_required(f)
+
 
 def get_db():
     """Connect to the database."""
@@ -61,11 +65,13 @@ def get_db():
         g.sqlite_db.row_factory = sqlite3.Row
     return g.sqlite_db
 
+
 @app.teardown_appcontext
 def close_db(error):
     """Close the database at the end of the request."""
     if hasattr(g, 'sqlite_db'):
         g.sqlite_db.close()
+
 
 def init_db():
     """Initialize the database."""
@@ -90,10 +96,12 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 class User(UserMixin):
     def __init__(self, id, username):
         self.id = id
         self.username = username
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -102,6 +110,7 @@ def load_user(user_id):
     if user:
         return User(user['id'], user['username'])
     return None
+
 
 @app.route('/')
 def home():
@@ -113,163 +122,10 @@ def home():
         JOIN users u ON r.user_id = u.id 
         ORDER BY r.created_at DESC LIMIT 3
     ''').fetchall()
-    return render_template('home.html', 
-                         featured_remedies=featured_remedies,
-                         current_user=current_user)
+    return render_template('home.html',
+                           featured_remedies=featured_remedies,
+                           current_user=current_user)
 
-@app.route('/submit_remedy', methods=['POST'])
-@dev_login_required
-def submit_remedy():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        remedy_details = request.form.get('remedy_details')
-        
-        if not name or not remedy_details:
-            flash('Please fill in all fields', 'error')
-            return redirect(url_for('home'))
-        
-        try:
-            db = get_db()
-            db.execute('''
-                INSERT INTO user_remedies (user_id, name, remedy_details, created_at)
-                VALUES (?, ?, ?, datetime('now'))
-            ''', (current_user.id, name, remedy_details))
-            db.commit()
-            flash('Thank you for sharing your remedy!', 'success')
-        except Exception as e:
-            flash('An error occurred while submitting your remedy.', 'error')
-            print(e)
-        
-        return redirect(url_for('home'))
-
-@app.route('/submit_contact', methods=['POST'])
-def submit_contact():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        message = request.form.get('message')
-        
-        if not all([name, email, message]):
-            flash('Please fill in all fields', 'error')
-            return redirect(url_for('home'))
-        
-        try:
-            db = get_db()
-            db.execute('''
-                INSERT INTO contact_messages (name, email, message, created_at)
-                VALUES (?, ?, ?, datetime('now'))
-            ''', (name, email, message))
-            db.commit()
-            flash('Thank you for your message! We will get back to you soon.', 'success')
-        except Exception as e:
-            flash('An error occurred while sending your message.', 'error')
-            print(e)
-        
-        return redirect(url_for('home'))
-
-@app.route('/get_sessions')
-@dev_login_required
-def get_sessions():
-    db = get_db()
-    sessions = db.execute('''
-        SELECT id, title, created_at 
-        FROM chat_sessions 
-        WHERE user_id = ? 
-        ORDER BY created_at DESC
-    ''', (current_user.id,)).fetchall()
-    
-    return jsonify({
-        'sessions': [{
-            'id': row['id'],
-            'title': row['title'],
-            'created_at': row['created_at']
-        } for row in sessions]
-    })
-
-@app.route('/get_session_messages/<int:session_id>')
-@dev_login_required
-def get_session_messages(session_id):
-    db = get_db()
-    # Verify session belongs to current user
-    session = db.execute('''
-        SELECT id FROM chat_sessions 
-        WHERE id = ? AND user_id = ?
-    ''', (session_id, current_user.id)).fetchone()
-    
-    if not session:
-        return jsonify({'error': 'Session not found'}), 404
-    
-    messages = db.execute('''
-        SELECT content, is_bot, created_at 
-        FROM chat_messages 
-        WHERE session_id = ? 
-        ORDER BY created_at
-    ''', (session_id,)).fetchall()
-    
-    return jsonify({
-        'messages': [{
-            'content': row['content'],
-            'isBot': bool(row['is_bot']),
-            'timestamp': row['created_at']
-        } for row in messages]
-    })
-
-# Initialize session manager
-session_manager = SessionManager(app)
-
-@app.route('/chat')
-@dev_login_required
-def chat():
-    session_id = request.args.get('session_id')
-    if not session_id:
-        # Create new session
-        session_id = session_manager.create_session(current_user.id)
-        return redirect(url_for('chat', session_id=session_id))
-    
-    session = session_manager.get_session(session_id)
-    if not session or session.user_id != current_user.id:
-        return redirect(url_for('chat'))
-    
-    # Get all user sessions for the sidebar
-    user_sessions = session_manager.get_user_sessions(current_user.id)
-    
-    return render_template('chat.html', 
-                         session_id=session_id,
-                         current_session=session,
-                         sessions=user_sessions)
-
-@app.route('/chat_message', methods=['POST'])
-@dev_login_required
-def handle_chat_message():
-    data = request.get_json()
-    message = data.get('message')
-    session_id = data.get('session_id')
-    
-    if not message or not session_id:
-        return jsonify({'error': 'Invalid request'}), 400
-    
-    # Add user message
-    if not session_manager.add_message(session_id, message, 'user'):
-        return jsonify({'error': 'Failed to save message'}), 500
-    
-    try:
-        # Get AI response
-        response = client.chat.completions.create(
-            model="gpt-4-1106-preview",
-            messages=[{"role": "user", "content": message}]
-        )
-        ai_response = response.choices[0].message.content
-        
-        # Add AI message
-        session_manager.add_message(session_id, ai_response, 'assistant')
-        
-        return jsonify({
-            'response': ai_response,
-            'session_id': session_id
-        })
-    except Exception as e:
-        logger.error(f"Error in chat_message: {str(e)}")
-        return jsonify({'error': str(e)}), 500
 
 # Authentication routes
 @app.route('/register', methods=['GET', 'POST'])
@@ -277,7 +133,7 @@ def register():
     if request.method == 'POST':
         logger.debug(f"Form data received: {request.form}")
         logger.debug(f"CSRF token present: {'csrf_token' in request.form}")
-        
+
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
@@ -285,7 +141,7 @@ def register():
         gender = request.form.get('gender')
         allergies = request.form.get('allergies')
         health_condition = request.form.get('health_condition')
-        
+
         db = get_db()
         error = None
 
@@ -307,11 +163,12 @@ def register():
                 return redirect(url_for('login'))
             except sqlite3.IntegrityError:
                 error = f'User {username} or email {email} is already registered.'
-        
+
         flash(error)
         print("Error:", error)  # Debug print
 
     return render_template('register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -339,6 +196,7 @@ def login():
 
     return render_template('login.html')
 
+
 @app.route('/logout')
 @dev_login_required
 def logout():
@@ -346,16 +204,213 @@ def logout():
     flash('You have been logged out.')
     return redirect(url_for('login'))
 
-# CLI command to initialize the database
+
 @app.cli.command('init-db')
 def init_db_command():
-    """Clear the existing data and create new tables."""
-    init_db()
-    print('Initialized the database.')
+    """Initialize the database."""
+    with app.open_resource('schema.sql', mode='r') as f:
+        db = get_db()
+        db.cursor().executescript(f.read())
+        db.commit()
+    print("Initialized the database.")
+
 
 @app.route('/test_csrf', methods=['POST'])
 def test_csrf():
     return "CSRF token is working!"
+
+
+@app.route('/submit_remedy', methods=['POST'])
+@dev_login_required
+def submit_remedy():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        remedy_details = request.form.get('remedy_details')
+
+        if not name or not remedy_details:
+            flash('Please fill in all fields', 'error')
+            return redirect(url_for('home'))
+
+        try:
+            db = get_db()
+            db.execute('''
+                INSERT INTO user_remedies (user_id, name, remedy_details, created_at)
+                VALUES (?, ?, ?, datetime('now'))
+            ''', (current_user.id, name, remedy_details))
+            db.commit()
+            flash('Thank you for sharing your remedy!', 'success')
+        except Exception as e:
+            flash('An error occurred while submitting your remedy.', 'error')
+            print(e)
+
+        return redirect(url_for('home'))
+
+
+@app.route('/submit_contact', methods=['POST'])
+def submit_contact():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        message = request.form.get('message')
+
+        if not all([name, email, message]):
+            flash('Please fill in all fields', 'error')
+            return redirect(url_for('home'))
+
+        try:
+            db = get_db()
+            db.execute('''
+                INSERT INTO contact_messages (name, email, message, created_at)
+                VALUES (?, ?, ?, datetime('now'))
+            ''', (name, email, message))
+            db.commit()
+            flash('Thank you for your message! We will get back to you soon.', 'success')
+        except Exception as e:
+            flash('An error occurred while sending your message.', 'error')
+            print(e)
+
+        return redirect(url_for('home'))
+
+
+@app.route('/get_sessions')
+@dev_login_required
+def get_sessions():
+    db = get_db()
+    sessions = db.execute('''
+        SELECT id, title, created_at 
+        FROM chat_sessions 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC
+    ''', (current_user.id,)).fetchall()
+
+    return jsonify({
+        'sessions': [{
+            'id': row['id'],
+            'title': row['title'],
+            'created_at': row['created_at']
+        } for row in sessions]
+    })
+
+
+@app.route('/get_session_title')
+@dev_login_required
+def get_session_title(sessions):
+    session_id = request.args.get('session_id')
+    session = session_manager.get_session(session_id)
+    if not session:
+        return jsonify({"status": "error", "error": "Session not found"}), 404
+    title = session_manager.generate_title(session.messages)
+    if title:
+        # add this line to update session title
+        session_manager.update_session_title(session.session_id, title)
+        return session_manager.generate_title(sessions)
+    return jsonify({"status": "ready", "title": title})
+
+
+@app.route('/get_session_messages/<int:session_id>')
+@dev_login_required
+def get_session_messages(session_id):
+    db = get_db()
+    # Verify session belongs to current user
+    session = db.execute('''
+        SELECT id FROM chat_sessions 
+        WHERE id = ? AND user_id = ?
+    ''', (session_id, current_user.id)).fetchone()
+
+    if not session:
+        return jsonify({'error': 'Session not found'}), 404
+
+    messages = db.execute('''
+        SELECT content, is_bot, created_at 
+        FROM chat_messages 
+        WHERE session_id = ? 
+        ORDER BY created_at
+    ''', (session_id,)).fetchall()
+
+    return jsonify({
+        'messages': [{
+            'content': row['content'],
+            'isBot': bool(row['is_bot']),
+            'timestamp': row['created_at']
+        } for row in messages]
+    })
+
+
+# Initialize session manager
+session_manager = SessionManager(app)
+
+
+@app.route('/chat', methods=['GET', 'POST'])
+def chat():
+    if request.method == 'POST':
+        return post_chat()
+    return get_chat()
+
+
+def get_chat():
+    session_id = request.args.get('session_id')
+    sessions = session_manager.get_user_sessions(current_user.id)
+
+    if session_id:
+        session = session_manager.get_session(session_id)
+        if session:
+            # Ensure created_at is formatted correctly before passing it to the template
+            session.created_at = session.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            return render_template('chat.html', session=session, sessions=sessions)
+
+    return render_template('chat.html', sessions=sessions)
+
+def get_chat_session_data(session_id):
+    sessions = session_manager.get_user_sessions(current_user.id)
+    existing_session = next((session for session in sessions if session['session_id'] == session_id), None)
+
+    if not existing_session:
+        new_session_id = session_manager.create_session(current_user.id, session_id)
+        return redirect(url_for('chat', session_id=new_session_id))
+
+    return render_template('chat.html', sessions=sessions, session_id=session_id,
+                           current_session=existing_session, title=generate_or_get_title(session_id, existing_session),
+                           created_at=existing_session['created_at'])
+
+
+def post_chat():
+    current_session_id = request.args.get('session_id')
+    sessions = session_manager.get_user_sessions(current_user.id)
+
+    if not current_session_id or not any([session['session_id'] == current_session_id for session in sessions]):
+        current_session_id = session_manager.create_session(current_user.id, current_session_id)
+
+    return redirect(url_for('chat', session_id=current_session_id))
+
+
+@app.route('/chat_message', methods=['POST'])
+def handle_chat_message():
+    data = request.get_json()
+    user = current_user
+
+    if not data:
+        # Data is missing from the request
+        return jsonify({'status': 'error', 'message': 'no data provided'}), 400
+
+    message = data.get('message')
+    session_id = data.get('session_id')
+
+    if not message:
+        # Missing a message from the request data
+        return jsonify({'status': 'error', 'message': 'No message provided'}), 400
+
+    if not session_id:
+        session_id = session_manager.create_session(current_user.id, session_id)
+
+    session = session_manager.get_session(session_id)
+    if not (session and session.user_id == current_user.id):
+        return jsonify({'error': 'Unauthorized or session not found'}), 403
+
+    if not session_manager.add_message(session_id, message, 'user'):
+        return jsonify({'error': 'Failed to save message'}), 500
+
+    return generate_ai_response_and_session(message, session_id)
+
 
 @app.route('/chat/<int:session_id>')
 @dev_login_required
@@ -365,29 +420,95 @@ def chat_session(session_id):
         SELECT * FROM chat_sessions 
         WHERE id = ? AND user_id = ?
     ''', (session_id, current_user.id)).fetchone()
-    
+
     if not session:
         return redirect(url_for('chat'))
-        
-    # Load conversation history from JSON
+
+    return load_conversation_and_render_template(session_id)
+
+
+def generate_ai_response_and_session(message, session_id):
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": message}]
+        )
+        ai_response = response.choices[0].message.content
+        session_manager.add_message(session_id, ai_response, 'assistant')  # Save AI response
+        sessions = session_manager.get_user_sessions(current_user.id)
+
+        return jsonify({
+            'response': ai_response,
+            'session_id': session_id,
+            'previous_sessions': sessions
+        })
+    except Exception as e:
+        logger.error(f"Error in chat_message: {str(e)}")
+        return jsonify({'error': 'Failed to process AI response'}), 500
+
+
+def load_conversation_and_render_template(session_id):
     try:
         with open(f'conversation_{session_id}.json', 'r') as f:
             conversation = json.load(f)
     except FileNotFoundError:
         conversation = {"messages": []}
-    
-    return render_template('chat.html', 
-                         session_id=session_id,
-                         conversation=conversation)
+    sessions = session_manager.get_user_sessions(current_user.id)
 
-@app.route('/delete_session/<session_id>', methods=['POST'])
+    return render_template('chat.html',
+                           session_id=session_id,
+                           conversation=conversation,
+                           previous_sessions=sessions)
+
+
+def generate_or_get_title(sessions, session):
+    title = session_manager.update_session_title(session['session_id'], session['title'])
+    if title:
+        return session_manager.generate_title(sessions)
+    return None
+
+
+@app.route('/reopen_session/<session_id>', methods=['GET'])
+def reopen_session(session_id):
+    session = session_manager.get_session(session_id)
+
+    if session and session.user_id == current_user.id:
+        return load_conversation_and_render_template(session_id)
+
+    return "Session not found or unauthorized", 404
+
+
+@app.route('/delete_session', methods=['DELETE'])
 @dev_login_required
-def delete_session(session_id):
-    if session_manager.delete_session(session_id, current_user.id):
-        return jsonify({'success': True})
-    else:
-        return jsonify({'error': 'Failed to delete session'}), 500
+def delete_session():
+    data = request.get_json()
+    session_id = data.get('session_id')
+
+    if not session_id:
+        return jsonify({"success": False, "message": "Session ID is required"}), 400
+
+    try:
+        db = get_db()
+        # Verify session exists
+        session = db.execute('SELECT id FROM chat_sessions WHERE id = ?', (session_id,)).fetchone()
+        if not session:
+            return jsonify({"success": False, "message": "Session not found"}), 404
+
+        # Delete the session
+        db.execute('DELETE FROM chat_sessions WHERE id = ?', (session_id,))
+        db.commit()
+
+        # Optionally delete corresponding JSON file
+        json_file_path = f'conversations/{session_id}.json'
+        if os.path.exists(json_file_path):
+            os.remove(json_file_path)
+
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        logger.error(f"Error deleting session: {e}")
+        return jsonify({"success": False, "message": "Internal server error"}), 500
+
 
 if __name__ == '__main__':
     init_db()  # Initialize the database
-    app.run(debug=True) 
+    app.run(debug=True)
