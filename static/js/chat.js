@@ -7,13 +7,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentSessionId = document.getElementById('current-session-id')?.value || null;
 
+    // Function to append a message to the chatbox
     const appendMessage = (content, role) => {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
-            messageDiv.innerHTML = `<span>${content}</span>`;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role}`;
+        messageDiv.innerHTML = `<span>${content}</span>`;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    // Function to load conversation
+    const loadConversation = async (sessionId) => {
+        try {
+            const response = await fetch(`/api/reopen_session/${sessionId}`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const { messages, session } = data;
+
+                // Clear existing chat
+                chatMessages.innerHTML = '';
+
+                // Display session info (title, timestamps)
+                document.querySelector('h1').textContent = session.title;
+
+                // Append messages to chat
+                messages.forEach(msg => {
+                    appendMessage(msg.content, msg.role === 'user' ? 'user-message' : 'bot-message');
+                });
+            } else {
+                console.error(data.message);
+                alert('Failed to load conversation.');
+            }
+        } catch (error) {
+            console.error('Error loading conversation:', error);
+            alert('An error occurred while loading the conversation.');
+        }
+    };
+
+    // Handle reopen button clicks
+    const reopenButtons = document.querySelectorAll('.reopen-button');
+    reopenButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const sessionId = button.dataset.sessionId;
+            loadConversation(sessionId);
+        });
+    });
 
     const updateSessionTitle = (sessionId) => {
         if (!sessionId) {

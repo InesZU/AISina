@@ -133,6 +133,7 @@ class SessionManager:
             ).fetchone()
 
             if not session:
+                logger.error(f"Session {session_id} not found.")
                 return None
 
             # Parse timestamps
@@ -201,6 +202,7 @@ class SessionManager:
                 with open(json_path, "r") as f:
                     data = json.load(f)
                     return data.get("messages", [])  # Return the messages list
+            logger.warning(f"No JSON file found for session {session_id}")
             return []  # Return an empty list if no messages are found
         except Exception as e:
             logger.error(f"Failed to retrieve messages for session {session_id}: {e}")
@@ -270,38 +272,3 @@ class SessionManager:
         except Exception as e:
             logger.error(f"Failed to delete session: {e}")
             return False
-
-    # def cleanup_expired_sessions(self):
-    #     """Remove sessions older than session_lifetime."""
-    #     try:
-    #         with self.app.app_context():
-    #             expiry_date = datetime.utcnow() - self.session_lifetime
-    #             db = get_db()
-    #             expired_sessions = db.execute('''
-    #                    SELECT id, updated_at, title FROM chat_sessions
-    #                    WHERE updated_at < ?
-    #                ''', (expiry_date,)).fetchall()
-    #
-    #             for session in expired_sessions:
-    #                 logger.info(
-    #                     f"Cleaning session: {session['id']} last updated at {session['updated_at']}, Title: {session['title']}")
-    #                 self.delete_session(session['id'], None)
-    #
-    #             logger.info(f"Cleaned up {len(expired_sessions)} sessions older than {expiry_date}")
-    #     except Exception as e:
-    #         logger.error(f"Failed to cleanup expired sessions: {e}")
-    #
-    # def _start_cleanup_thread(self):
-    #     """Start a background thread for cleaning up expired sessions."""
-    #
-    #     def cleanup_task():
-    #         while True:
-    #             try:
-    #                 self.cleanup_expired_sessions()
-    #             except Exception as e:
-    #                 logger.error(f"Error in cleanup task: {e}")
-    #             finally:
-    #                 threading.Event().wait(3600)  # Run cleanup every hour
-    #
-    #     cleanup_thread = threading.Thread(target=cleanup_task, daemon=True)
-    #     cleanup_thread.start()

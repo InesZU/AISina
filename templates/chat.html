@@ -65,7 +65,7 @@
                     </div>
                 </div>
                 <div class="session-actions">
-                    <button class="session-button reopen-button" onclick="window.location.href='{{ url_for('chat', session_id=session.session_id) }}'">Reopen</button>
+                    <button class="session-button reopen-button" data-session-id="{{ session.session_id }}">Reopen</button>
                     <button class="session-button delete-button" onclick="deleteSession('{{ session.session_id }}')">Delete</button>
                 </div>
             </div>

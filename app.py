@@ -360,6 +360,7 @@ def get_chat():
 
     return render_template('chat.html', sessions=sessions)
 
+
 def get_chat_session_data(session_id):
     sessions = session_manager.get_user_sessions(current_user.id)
     existing_session = next((session for session in sessions if session['session_id'] == session_id), None)
@@ -468,14 +469,33 @@ def generate_or_get_title(sessions, session):
     return None
 
 
-@app.route('/reopen_session/<session_id>', methods=['GET'])
+@app.route('/api/reopen_session/<session_id>', methods=['GET'])
 def reopen_session(session_id):
-    session = session_manager.get_session(session_id)
+    try:
+        app.logger.info(f"Reopening session with ID: {session_id}")
+        # Verify session exists and belongs to the user
+        session = session_manager.get_session(session_id)
+        if not session or session.user_id != current_user.id:
+            return jsonify({"status": "error", "message": "Session not found or unauthorized"}), 404
 
-    if session and session.user_id == current_user.id:
-        return load_conversation_and_render_template(session_id)
+        # Load messages from the JSON file
+        messages = session_manager.get_messages(session_id)
+        if not messages:
+            return jsonify({"status": "error", "message": "No conversation found for this session"}), 404
 
-    return "Session not found or unauthorized", 404
+        return jsonify({
+            "status": "success",
+            "session": {
+                "id": session.session_id,
+                "title": session.title,
+                "created_at": session.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "updated_at": session.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            },
+            "messages": messages
+        }), 200
+    except Exception as e:
+        app.logger.error(f"Failed to reopen session {session_id}: {e}")
+        return jsonify({"status": "error", "message": "Internal server error"}), 500
 
 
 @app.route('/delete_session', methods=['DELETE'])
